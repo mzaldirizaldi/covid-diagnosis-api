@@ -24,13 +24,28 @@ def load_model():
             logger.error(f"Failed to load model: {str(ex)}")
 
 
+# Custom deployment health check endpoint
+@app.route('/deployment-health', methods=['GET'])
+def deployment_health_check():
+    return '', 200
+
+
 # Health check endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
-    # Perform any health check logic here
-    # Return a success response indicating the application is healthy
-    logger.info("Health check passed successfully.")
-    return '', 200
+    try:
+        if model is not None:
+            # Perform any health check logic here
+            # Return a success response indicating the application is healthy
+            logger.info("Health check passed successfully.")
+            return '', 200
+        else:
+            # Model not loaded yet, treat it as a failure during initial deployment
+            logger.error("Model not loaded.")
+            return 'Health check failed', 500
+    except Exception as ex:
+        logger.error(f"Health check failed: {str(ex)}")
+        return 'Health check failed', 500
 
 
 @app.route('/', methods=['POST'])
