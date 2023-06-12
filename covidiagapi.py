@@ -6,6 +6,7 @@ app = Flask(__name__)
 xgb = xgb.XGBClassifier(random_state=30)
 xgb.load_model('covid_diag_model.json')
 
+
 @app.route('/', methods=['POST'])
 def home():
     # getting data from post
