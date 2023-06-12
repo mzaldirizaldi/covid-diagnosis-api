@@ -2,9 +2,6 @@ from flask import Flask, request, jsonify
 import xgboost as xgb
 import numpy as np
 
-xgb = xgb.XGBClassifier(random_state=30)
-xgb.load_model('covid_diag_model.json')
-
 app = Flask(__name__)
 
 
@@ -42,3 +39,5 @@ def home():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    xgb = xgb.XGBClassifier(random_state=30)
+    xgb.load_model('covid_diag_model.json')
