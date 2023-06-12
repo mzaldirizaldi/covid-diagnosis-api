@@ -1,18 +1,23 @@
-from flask import Flask, request, jsonify
-import xgboost as xgb
 import numpy as np
+import xgboost as xgb
+from flask import Flask, request, jsonify
+import logging
 
 app = Flask(__name__)
 model = None
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# load model
-@app.before_request
-def load_model():
-    global model
+
+try:
+    # Load model
     model = xgb.XGBClassifier(random_state=30)
     model.load_model('model/covid_diag_model.json')
-    app.logger.info("Model Loaded Successfully.")
+    logging.info("Model loaded successfully.")
+except Exception as e:
+    logger.error(f"Failed to load model: {str(e)}")
 
 
 # Health check endpoint
@@ -46,8 +51,13 @@ def home():
         # return result as json
         return jsonify({'pred_result_proba': str(pred_result_proba), 'pred_result': str(pred_result)})
     except (ValueError, KeyError):
+        logger.error(f"Invalid input data: {str(e)}")
         return jsonify({'error': 'Invalid input data'})
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    try:
+        logging.info("Starting the application.")
+        app.run(host='0.0.0.0', port=8080, debug=False)
+    except Exception as e:
+        logger.error(f"An error occurred while running the application: {str(e)}")
