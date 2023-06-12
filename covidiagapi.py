@@ -61,6 +61,6 @@ def home():
 if __name__ == '__main__':
     try:
         logger.info("Starting the application.")
-        app.run(host='0.0.0.0', port=8080, debug=False)
+        app.run(host='0.0.0.0', port=8080)
     except Exception as e:
         logger.error(f"An error occurred while running the application: {str(e)}")
