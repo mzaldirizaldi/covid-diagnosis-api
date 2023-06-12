@@ -11,12 +11,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# Load model
+# Load model and dependencies
 @app.before_request
 def load_model():
     global model
     if model is None:
         try:
+            # Check the availability of dependencies
+            check_dependencies()
+
+            # Load the model
             model = xgb.XGBClassifier(random_state=30)
             model.load_model('model/covid_diag_model.json')
             logger.info("Model loaded successfully.")
@@ -24,10 +28,55 @@ def load_model():
             logger.error(f"Failed to load model: {str(ex)}")
 
 
+def check_dependencies():
+    # Perform checks for the availability of dependencies here
+
+    # Check for xgboost
+    try:
+        import xgboost
+        logger.info("xgboost is available.")
+    except ImportError:
+        logger.error("xgboost library is not available.")
+        raise ImportError("xgboost library is not available.")
+
+    # Check for numpy
+    try:
+        import numpy
+        logger.info("numpy is available.")
+    except ImportError:
+        logger.error("numpy library is not available.")
+        raise ImportError("numpy library is not available.")
+
+    # Check for Flask
+    try:
+        import flask
+        logger.info("Flask is available.")
+    except ImportError:
+        logger.error("Flask library is not available.")
+        raise ImportError("Flask library is not available.")
+
+    # Check for scikit-learn
+    try:
+        import sklearn
+        logger.info("scikit-learn is available.")
+    except ImportError:
+        logger.error("scikit-learn library is not available.")
+        raise ImportError("scikit-learn library is not available.")
+
+
 # Custom deployment health check endpoint
 @app.route('/deployment-health', methods=['GET'])
 def deployment_health_check():
-    return '', 200
+    try:
+        # Check the availability of dependencies
+        check_dependencies()
+
+        # Return a success response indicating the deployment health
+        logger.info("Deployment health check passed successfully.")
+        return '', 200
+    except Exception as ex:
+        logger.error(f"Deployment health check failed: {str(ex)}")
+        return 'Deployment health check failed', 500
 
 
 # Health check endpoint
