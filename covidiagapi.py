@@ -15,12 +15,13 @@ logger = logging.getLogger(__name__)
 @app.before_request
 def load_model():
     global model
-    try:
-        model = xgb.XGBClassifier(random_state=30)
-        model.load_model('model/covid_diag_model.json')
-        logger.info("Model loaded successfully.")
-    except Exception as ex:
-        logger.error(f"Failed to load model: {str(ex)}")
+    if model is None:
+        try:
+            model = xgb.XGBClassifier(random_state=30)
+            model.load_model('model/covid_diag_model.json')
+            logger.info("Model loaded successfully.")
+        except Exception as ex:
+            logger.error(f"Failed to load model: {str(ex)}")
 
 
 # Health check endpoint
