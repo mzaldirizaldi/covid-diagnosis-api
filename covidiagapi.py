@@ -11,13 +11,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-try:
-    # Load model
-    model = xgb.XGBClassifier(random_state=30)
-    model.load_model('model/covid_diag_model.json')
-    logging.info("Model loaded successfully.")
-except Exception as e:
-    logger.error(f"Failed to load model: {str(e)}")
+# Load model
+@app.before_request
+def load_model():
+    global model
+    try:
+        model = xgb.XGBClassifier(random_state=30)
+        model.load_model('model/covid_diag_model.json')
+        logger.info("Model loaded successfully.")
+    except Exception as ex:
+        logger.error(f"Failed to load model: {str(ex)}")
 
 
 # Health check endpoint
@@ -50,13 +53,14 @@ def home():
 
         # return result as json
         return jsonify({'pred_result_proba': str(pred_result_proba), 'pred_result': str(pred_result)})
-    except (ValueError, KeyError):
+    except (ValueError, KeyError) as ex:
+        logger.error(f"Invalid input data: {str(ex)}")
         return jsonify({'error': 'Invalid input data'})
 
 
 if __name__ == '__main__':
     try:
-        logging.info("Starting the application.")
+        logger.info("Starting the application.")
         app.run(host='0.0.0.0', port=8080, debug=False)
     except Exception as e:
         logger.error(f"An error occurred while running the application: {str(e)}")
