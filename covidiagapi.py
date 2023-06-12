@@ -51,7 +51,6 @@ def home():
         # return result as json
         return jsonify({'pred_result_proba': str(pred_result_proba), 'pred_result': str(pred_result)})
     except (ValueError, KeyError):
-        logger.error(f"Invalid input data: {str(e)}")
         return jsonify({'error': 'Invalid input data'})
 
 
