@@ -29,12 +29,13 @@ def load_model():
 def health_check():
     # Perform any health check logic here
     # Return a success response indicating the application is healthy
-    return jsonify({'status': 'ok'})
+    logger.info("Health check passed successfully.")
+    return '', 200
 
 
 @app.route('/', methods=['POST'])
 def home():
-    # Get data from POST
+    # Get data from POST request
     input_names = ['breath_input', 'fever_input', 'dry_input', 'sore_input', 'running_input', 'asthma_input',
                    'chronic_input', 'headache_input', 'heart_input', 'diabetes_input', 'hyper_input',
                    'fatigue_input', 'gastro_input', 'abroad_input', 'contact_input', 'attend_input',
