@@ -3,7 +3,8 @@ import xgboost as xgb
 import numpy as np
 
 app = Flask(__name__)
-
+xgb = xgb.XGBClassifier(random_state=30)
+xgb.load_model('covid_diag_model.json')
 
 @app.route('/', methods=['POST'])
 def home():
@@ -38,6 +39,4 @@ def home():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    xgb = xgb.XGBClassifier(random_state=30)
-    xgb.load_model('covid_diag_model.json')
+    app.run()
