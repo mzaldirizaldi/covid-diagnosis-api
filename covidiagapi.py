@@ -15,6 +15,14 @@ def load_model():
     app.logger.info("Model Loaded Successfully.")
 
 
+# Health check endpoint
+@app.route('/health', methods=['GET'])
+def health_check():
+    # Perform any health check logic here
+    # Return a success response indicating the application is healthy
+    return jsonify({'status': 'ok'})
+
+
 @app.route('/', methods=['POST'])
 def home():
     # get data from POST
