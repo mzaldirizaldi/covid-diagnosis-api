@@ -51,7 +51,7 @@ def health_check():
         if model is None:
             # Model not loaded, load the model
             load_model()
-
+            return '', 200
         if model is not None:
             # Return a success response indicating the application is healthy
             logger.info("Health check passed successfully.")
@@ -98,7 +98,6 @@ def home():
 if __name__ == '__main__':
     try:
         logger.info("Starting the application.")
-        load_model()
         app.run(host='0.0.0.0', port=8080, debug=False)
     except Exception as e:
         logger.error(f"An error occurred while running the application: {str(e)}")
