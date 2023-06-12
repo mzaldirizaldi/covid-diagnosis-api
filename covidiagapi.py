@@ -14,48 +14,27 @@ logger = logging.getLogger(__name__)
 
 def check_dependencies():
     # Perform checks for the availability of dependencies here
-
-    # Check for xgboost
-    try:
-        import xgboost
-        logger.info("xgboost is available.")
-    except ImportError:
-        logger.error("xgboost library is not available.")
-        raise ImportError("xgboost library is not available.")
-
-    # Check for numpy
-    try:
-        import numpy
-        logger.info("numpy is available.")
-    except ImportError:
-        logger.error("numpy library is not available.")
-        raise ImportError("numpy library is not available.")
-
-    # Check for Flask
-    try:
-        import flask
-        logger.info("Flask is available.")
-    except ImportError:
-        logger.error("Flask library is not available.")
-        raise ImportError("Flask library is not available.")
-
-    # Check for scikit-learn
-    try:
-        import sklearn
-        logger.info("scikit-learn is available.")
-    except ImportError:
-        logger.error("scikit-learn library is not available.")
-        raise ImportError("scikit-learn library is not available.")
+    required_libraries = ['xgboost', 'numpy', 'flask', 'scikit-learn']
+    for lib in required_libraries:
+        try:
+            __import__(lib)
+            logger.info(f"{lib} is available.")
+        except ImportError:
+            logger.error(f"{lib} library is not available.")
+            raise ImportError(f"{lib} library is not available.")
 
 
 def perform_initial_deployment_tasks():
-    # Execute the deployment health check once during initial deployment
-    deployment_health_check()
+    global is_deployed
+    if not is_deployed:
+        # Execute the deployment health check once during initial deployment
+        deployment_health_check()
+        is_deployed = True
 
 
 # Load model and dependencies
 def load_model():
-    global model, is_deployed
+    global model
     if model is None:
         try:
             # Check the availability of dependencies
@@ -65,11 +44,6 @@ def load_model():
             model = xgb.XGBClassifier(random_state=30)
             model.load_model('model/covid_diag_model.json')
             logger.info("Model loaded successfully.")
-
-            if not is_deployed:
-                # Perform deployment-specific initialization
-                perform_initial_deployment_tasks()
-                is_deployed = True
         except Exception as ex:
             logger.error(f"Failed to load model: {str(ex)}")
 
