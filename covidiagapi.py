@@ -40,25 +40,8 @@ def load_model():
             logger.error(f"Failed to load model: {str(ex)}")
 
 
-# Custom deployment health check endpoint
-def deployment_health_check():
-    try:
-        global is_deployed
-
-        # Load model
-        load_model()
-        # Return a success response indicating the deployment health
-        logger.info("Deployment health check passed successfully.")
-        if not is_deployed:
-            # Execute the deployment health check once during initial deployment
-            is_deployed = True
-        return '', 200
-    except Exception as ex:
-        logger.error(f"Deployment health check failed: {str(ex)}")
-        return 'Deployment health check failed', 500
-
-
 # Health check endpoint
+@app.route('/health', methods=['GET'])
 def health_check():
     try:
         global model
@@ -68,7 +51,6 @@ def health_check():
             load_model()
 
         if model is not None:
-            # Perform any health check logic here
             # Return a success response indicating the application is healthy
             logger.info("Health check passed successfully.")
             return '', 200
@@ -108,18 +90,12 @@ def home():
         return jsonify({'error': 'Invalid input data'})
 
 
-@app.route('/health', methods=['GET'])
-def health_wrapper():
-    # Perform deployment health check first
-    deployment_health_check()
-
-    # Call the health_check method
-    return health_check()
-
-
 if __name__ == '__main__':
     try:
         logger.info("Starting the application.")
+
+        # Load model at deployment
+        load_model()
         app.run(host='0.0.0.0', port=8080, debug=False)
     except Exception as e:
         logger.error(f"An error occurred while running the application: {str(e)}")
