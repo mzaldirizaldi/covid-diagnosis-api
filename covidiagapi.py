@@ -24,15 +24,7 @@ def check_dependencies():
             raise ImportError(f"{lib} library is not available.")
 
 
-def perform_initial_deployment_tasks():
-    global is_deployed
-    if not is_deployed:
-        # Execute the deployment health check once during initial deployment
-        deployment_health_check()
-        is_deployed = True
-
-
-# Load model and dependencies
+# Load model and check dependencies
 def load_model():
     global model
     if model is None:
@@ -49,14 +41,17 @@ def load_model():
 
 
 # Custom deployment health check endpoint
-@app.route('/deployment-health', methods=['GET'])
 def deployment_health_check():
     try:
-        # Check the availability of dependencies
-        check_dependencies()
+        global is_deployed
 
+        # Load model
+        load_model()
         # Return a success response indicating the deployment health
         logger.info("Deployment health check passed successfully.")
+        if not is_deployed:
+            # Execute the deployment health check once during initial deployment
+            is_deployed = True
         return '', 200
     except Exception as ex:
         logger.error(f"Deployment health check failed: {str(ex)}")
@@ -64,7 +59,6 @@ def deployment_health_check():
 
 
 # Health check endpoint
-@app.route('/health', methods=['GET'])
 def health_check():
     try:
         global model
@@ -112,6 +106,15 @@ def home():
     except (ValueError, KeyError) as ex:
         logger.error(f"Invalid input data: {str(ex)}")
         return jsonify({'error': 'Invalid input data'})
+
+
+@app.route('/health', methods=['GET'])
+def health_wrapper():
+    # Perform deployment health check first
+    deployment_health_check()
+
+    # Call the health_check method
+    return health_check()
 
 
 if __name__ == '__main__':
