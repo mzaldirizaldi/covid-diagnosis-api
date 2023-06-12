@@ -5,7 +5,6 @@ import logging
 
 app = Flask(__name__)
 model = None
-is_deployed = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -14,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def check_dependencies():
     # Perform checks for the availability of dependencies here
-    required_libraries = ['xgboost', 'numpy', 'flask', 'scikit-learn']
+    required_libraries = ['xgboost', 'numpy', 'flask', 'sklearn']
     for lib in required_libraries:
         try:
             __import__(lib)
@@ -27,6 +26,7 @@ def check_dependencies():
 # Load model and check dependencies
 def load_model():
     global model
+
     if model is None:
         try:
             # Check the availability of dependencies
@@ -38,6 +38,8 @@ def load_model():
             logger.info("Model loaded successfully.")
         except Exception as ex:
             logger.error(f"Failed to load model: {str(ex)}")
+    else:
+        logger.info("Model is already loaded.")
 
 
 # Health check endpoint
@@ -66,17 +68,20 @@ def health_check():
 @app.route('/', methods=['POST'])
 def home():
     # Get data from POST request
-    input_names = ['breath_input', 'fever_input', 'dry_input', 'sore_input', 'running_input', 'asthma_input',
-                   'chronic_input', 'headache_input', 'heart_input', 'diabetes_input', 'hyper_input',
-                   'fatigue_input', 'gastro_input', 'abroad_input', 'contact_input', 'attend_input',
-                   'visit_input', 'family_input']
+    input_names = [
+        'breath_input', 'fever_input', 'dry_input', 'sore_input', 'running_input', 'asthma_input',
+        'chronic_input', 'headache_input', 'heart_input', 'diabetes_input', 'hyper_input',
+        'fatigue_input', 'gastro_input', 'abroad_input', 'contact_input', 'attend_input',
+        'visit_input', 'family_input'
+    ]
 
-    input_values = {name: int(value) for name, value in request.form.items() if name in input_names and value.isdigit()}
+    input_values = {
+        name: int(value) for name, value in request.form.items() if name in input_names and value.isdigit()
+    }
 
     try:
         # Filter and convert to numpy array and reshape to one instance only
-        integer_values = list(input_values.values())
-        input_data = np.asarray(integer_values).reshape(1, -1)
+        input_data = np.asarray(list(input_values.values())).reshape(1, -1)
 
         # Feed to model and predict
         pred_result_proba = model.predict_proba(input_data)
@@ -93,8 +98,6 @@ def home():
 if __name__ == '__main__':
     try:
         logger.info("Starting the application.")
-
-        # Load model at deployment
         load_model()
         app.run(host='0.0.0.0', port=8080, debug=False)
     except Exception as e:
