@@ -5,27 +5,11 @@ import logging
 
 app = Flask(__name__)
 model = None
+is_deployed = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# Load model and dependencies
-@app.before_request
-def load_model():
-    global model
-    if model is None:
-        try:
-            # Check the availability of dependencies
-            check_dependencies()
-
-            # Load the model
-            model = xgb.XGBClassifier(random_state=30)
-            model.load_model('model/covid_diag_model.json')
-            logger.info("Model loaded successfully.")
-        except Exception as ex:
-            logger.error(f"Failed to load model: {str(ex)}")
 
 
 def check_dependencies():
@@ -64,6 +48,32 @@ def check_dependencies():
         raise ImportError("scikit-learn library is not available.")
 
 
+def perform_initial_deployment_tasks():
+    # Execute the deployment health check once during initial deployment
+    deployment_health_check()
+
+
+# Load model and dependencies
+def load_model():
+    global model, is_deployed
+    if model is None:
+        try:
+            # Check the availability of dependencies
+            check_dependencies()
+
+            # Load the model
+            model = xgb.XGBClassifier(random_state=30)
+            model.load_model('model/covid_diag_model.json')
+            logger.info("Model loaded successfully.")
+
+            if not is_deployed:
+                # Perform deployment-specific initialization
+                perform_initial_deployment_tasks()
+                is_deployed = True
+        except Exception as ex:
+            logger.error(f"Failed to load model: {str(ex)}")
+
+
 # Custom deployment health check endpoint
 @app.route('/deployment-health', methods=['GET'])
 def deployment_health_check():
@@ -83,6 +93,12 @@ def deployment_health_check():
 @app.route('/health', methods=['GET'])
 def health_check():
     try:
+        global model
+
+        if model is None:
+            # Model not loaded, load the model
+            load_model()
+
         if model is not None:
             # Perform any health check logic here
             # Return a success response indicating the application is healthy
