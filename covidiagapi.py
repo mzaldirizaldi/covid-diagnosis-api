@@ -53,7 +53,6 @@ def health_check():
 
 
 # Load model and check dependencies
-@app.before_request
 def load_model():
     global model
 
