@@ -30,6 +30,7 @@ def check_dependencies():
 
 
 # Load model and check dependencies
+@app.before_request
 def load_model():
     global model
 
@@ -109,6 +110,6 @@ def home():
 if __name__ == '__main__':
     try:
         logger.info("Starting the application.")
-        app.run(host='0.0.0.0', port=8080, debug=False)
+        app.run(host='0.0.0.0', port=5000, debug=False)
     except Exception as e:
         logger.error(f"An error occurred while running the application: {str(e)}")
