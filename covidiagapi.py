@@ -2,6 +2,7 @@ import numpy as np
 import xgboost as xgb
 from flask import Flask, request, jsonify
 import logging
+import importlib
 
 app = Flask(__name__)
 model = None
@@ -14,13 +15,18 @@ logger = logging.getLogger(__name__)
 def check_dependencies():
     # Perform checks for the availability of dependencies here
     required_libraries = ['xgboost', 'numpy', 'flask', 'sklearn']
+    missing_libraries = []
+
     for lib in required_libraries:
         try:
-            __import__(lib)
+            importlib.import_module(lib)
             logger.info(f"{lib} is available.")
         except ImportError:
             logger.error(f"{lib} library is not available.")
-            raise ImportError(f"{lib} library is not available.")
+            missing_libraries.append(lib)
+
+    if missing_libraries:
+        raise ImportError("One or more required libraries are not available.")
 
 
 # Load model and check dependencies
@@ -81,6 +87,10 @@ def home():
     }
 
     try:
+        if model is None:
+            logger.error("Model not loaded.")
+            return jsonify({'error': 'Model not loaded'})
+
         # Filter and convert to numpy array and reshape to one instance only
         input_data = np.asarray(list(input_values.values())).reshape(1, -1)
 
