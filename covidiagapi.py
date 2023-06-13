@@ -29,27 +29,6 @@ def check_dependencies():
         raise ImportError("One or more required libraries are not available.")
 
 
-# Load model and check dependencies
-@app.before_request
-def load_model():
-    global model
-
-    if model is None:
-        try:
-            # Check the availability of dependencies
-            check_dependencies()
-
-            # Load the model
-            model = xgb.XGBClassifier(random_state=30)
-            model.load_model('model/covid_diag_model.json')
-            logger.info("Model loaded successfully.")
-        except Exception as ex:
-            logger.error(f"Failed to load model: {str(ex)}")
-            return 'Model load failed', 500
-    else:
-        logger.info("Model is already loaded.")
-
-
 # Health check endpoint
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -71,6 +50,27 @@ def health_check():
     except Exception as ex:
         logger.error(f"Health check failed: {str(ex)}")
         return 'Health check failed', 500
+
+
+# Load model and check dependencies
+@app.before_request
+def load_model():
+    global model
+
+    if model is None:
+        try:
+            # Check the availability of dependencies
+            check_dependencies()
+
+            # Load the model
+            model = xgb.XGBClassifier(random_state=30)
+            model.load_model('model/covid_diag_model.json')
+            logger.info("Model loaded successfully.")
+        except Exception as ex:
+            logger.error(f"Failed to load model: {str(ex)}")
+            return 'Model load failed', 500
+    else:
+        logger.info("Model is already loaded.")
 
 
 @app.route('/', methods=['POST'])
